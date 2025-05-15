@@ -2,7 +2,10 @@ package com.example.printerdevelopment4.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,18 +13,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicSecureTextField
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,34 +43,57 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.printerdevelopment4.R
+import com.example.printerdevelopment4.ui.data.AppViewModel
 import com.example.printerdevelopment4.ui.data.EnterViewModel
+import com.example.printerdevelopment4.ui.data.IPUiState
+import com.example.printerdevelopment4.ui.data.User
 import com.example.printerdevelopment4.ui.theme.PrinterDevelopment4Theme
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 @Composable
 fun EnterScreen(
     modifier: Modifier = Modifier,
     enterViewModel: EnterViewModel = viewModel(),
+    appViewModel: AppViewModel,
+    ipViewState: IPUiState = IPUiState(),
+    onEnterTap: () -> Unit
 ) {
     val enterUiState by enterViewModel.uiState.collectAsState()
+    val state = remember { TextFieldState() }
     val default = displayFontFamily
-    val username = ""
+    val JSON = "application/json; charset=utf-8".toMediaType()
+    var error = ""
+    var passVis by remember { mutableStateOf(false) }
     Surface(modifier = modifier)
     {
         Column(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .background(color = Color.White),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(30.dp))
             Column(
                 modifier = Modifier
-                    .weight(1f),
+                    .weight(0.5f),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
@@ -73,11 +109,12 @@ fun EnterScreen(
                         .height(100.dp)
                 )
                 Text(
-                    text = stringResource(R.string.print_smart),
+                    text = stringResource(R.string.oneprint),
                     style =
                     TextStyle(
                         fontFamily = FontFamily.SansSerif,
-                        fontSize = 70.sp
+                        fontSize = 70.sp,
+                        color = Color.Black
                     ),
                     modifier = Modifier
                         .padding(bottom = 15.dp)
@@ -94,14 +131,22 @@ fun EnterScreen(
                     .fillMaxWidth(),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    Text(text = "Имя пользователя", textAlign = TextAlign.Left)
+                    Text(modifier = Modifier.padding(start = 10.dp), text = "Адрес электронной почты", textAlign = TextAlign.Left, color = Color.Black)
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 10.dp)
-                            .height(50.dp),
-                        value = enterViewModel.EnteredUsername,
-                        onValueChange = { enterViewModel.EnteredUsername = it },
+                            .border(
+                                width = 2.dp,
+                                color = Color(red = 99, green = 124, blue = 247),
+                                shape = RoundedCornerShape(15.dp)
+                            )
+                            .background(shape = RoundedCornerShape(15.dp), color = Color.White)
+                            .height(60.dp),
+                        value = enterViewModel.EnteredEmail,
+                        onValueChange = { enterViewModel.EnteredEmail = it },
+                        textStyle = TextStyle(color = Color.Black),
+                        shape = RoundedCornerShape(15.dp),
                         singleLine = true
                     )
                 }
@@ -109,19 +154,64 @@ fun EnterScreen(
                     .fillMaxWidth(),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    Text(text = "Пароль", textAlign = TextAlign.Left)
+                    Text(modifier = Modifier.padding(start = 10.dp), text = "Пароль", textAlign = TextAlign.Left, color = Color.Black)
                     OutlinedTextField(
+                        value = enterViewModel.EnteredPassword,
+                        visualTransformation = if (!passVis) {
+                            PasswordVisualTransformation()
+                        } else {
+                            VisualTransformation.None
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 20.dp)
-                            .height(50.dp),
-                        value = enterViewModel.EnteredPassword,
-                        onValueChange = { enterViewModel.EnteredPassword = it },
+                            .border(
+                                width = 2.dp,
+                                color = Color(red = 99, green = 124, blue = 247),
+                                shape = RoundedCornerShape(15.dp)
+                            )
+                            .background(shape = RoundedCornerShape(15.dp), color = Color.White)
+                            .height(60.dp),
+                        trailingIcon = {
+                            Icon(
+                                if (!passVis) {
+                                    Icons.Filled.Visibility
+                                } else {
+                                    Icons.Filled.VisibilityOff
+                                },
+                                contentDescription = "Toggle password visibility",
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .requiredSize(28.dp)
+                                    .clickable { passVis = !passVis }
+                            )
+                        },
+                        onValueChange = { enterViewModel.EnteredPassword = it},
+                        shape = RoundedCornerShape(15.dp),
+                        textStyle = TextStyle(color = Color.Black),
                         singleLine = true
                     )
                 }
                 Button(
-                    onClick = { enterViewModel.updateState() },
+                    onClick = {
+                        val client = OkHttpClient()
+                        val user = User(enterViewModel.EnteredEmail, enterViewModel.EnteredPassword)
+                        val moshi = Moshi.Builder()
+                            .add(KotlinJsonAdapterFactory()).build()
+                        val jsonAdapterRequest = moshi.adapter(User::class.java)
+                        val jsonRequest = jsonAdapterRequest.toJson(user)
+                        val body: RequestBody = jsonRequest.toRequestBody(JSON)
+                        val request = Request.Builder().url("http://" + ipViewState.IP + ":3000/login").post(body).build()
+                        try {
+                            enterViewModel.sendRequest(moshi, client, request, appViewModel, onEnterTap)
+                        }
+                        catch (e: IOException){
+                            error = "Ошибка регистрации"
+                        }
+                        catch (e: Exception) {
+                            val error = e
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 30.dp),
@@ -141,6 +231,20 @@ fun EnterScreen(
                             fontWeight = FontWeight(400)
                         )
                     )
+                }
+                if (error != "") {
+                    Row(
+                        modifier = Modifier
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = error,
+                            style = TextStyle(
+                                fontSize = 14.sp,
+                                color = Color(200, 0, 0)
+                            )
+                        )
+                    }
                 }
                 Row(
                     modifier = Modifier
@@ -172,6 +276,6 @@ fun EnterScreen(
 @Composable
 fun EnterScreenPreview() {
     PrinterDevelopment4Theme {
-        EnterScreen()
+        EnterScreen(onEnterTap = {}, appViewModel = viewModel())
     }
 }

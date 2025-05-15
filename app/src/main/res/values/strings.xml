@@ -1,8 +1,18 @@
 <resources>
     <string name="app_name">PrinterDevelopment4</string>
-    <string name="print_smart">Print Smart</string>
     <string name="what_we_do">Печатай удалённо с помощью нашего приложения</string>
     <string name="reg_button">Зарегистрироваться</string>
     <string name="enter_button">Войти</string>
     <string name="confirm_button">Подтвердить</string>
+    <string name="Start">Начало</string>
+    <string name="Authorize">Авторизация</string>
+    <string name="Login">Вход</string>
+    <string name="Register">Регистрация</string>
+    <string name="Main">Главная</string>
+    <string name="Printer">Выбор принтера</string>
+    <string name="Payment">Оплата</string>
+    <string name="Profile">Профиль</string>
+    <string name="back_button">Back button</string>
+    <string name="file">File</string>
+    <string name="oneprint">OnePrint</string>
 </resources>
