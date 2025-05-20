@@ -49,24 +49,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.printerdevelopment4.R
 import com.example.printerdevelopment4.ui.data.IPUiState
-import com.example.printerdevelopment4.ui.data.IPViewModel
 import com.example.printerdevelopment4.ui.data.RegisterViewModel
 import com.example.printerdevelopment4.ui.data.User
 import com.example.printerdevelopment4.ui.theme.PrinterDevelopment4Theme
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.squareup.okhttp.Call
-import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import java.io.IOException
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 @Composable
 fun RegisterScreen(

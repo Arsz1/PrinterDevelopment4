@@ -2,7 +2,6 @@ package com.example.printerdevelopment4.ui.fileupload
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.printerdevelopment4.ui.data.AppUiState
 import com.example.printerdevelopment4.ui.data.OrderItem
 import com.example.printerdevelopment4.ui.data.OrderUiState
 import com.example.printerdevelopment4.ui.data.makeRequest
@@ -12,7 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.io.File
 import java.io.IOException
 
 class OrderViewModel(): ViewModel() {

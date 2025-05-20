@@ -1,8 +1,5 @@
 package com.example.printerdevelopment4.ui.data
 
-import androidx.compose.ui.graphics.vector.ImageVector
-import org.json.JSONObject
-
 class User(var email: String, var password: String )
 
 class LoginResponse(var message: String, var token: String)

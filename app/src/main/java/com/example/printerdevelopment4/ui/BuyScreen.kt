@@ -25,7 +25,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.printerdevelopment4.ui.data.FormattedPrint
 import com.example.printerdevelopment4.ui.data.IPUiState
 import com.example.printerdevelopment4.ui.data.OrderItem
-import com.example.printerdevelopment4.ui.data.PrintOptions
 import com.example.printerdevelopment4.ui.fileupload.OrderViewModel
 import com.example.printerdevelopment4.ui.theme.PrinterDevelopment4Theme
 import com.squareup.moshi.Moshi
