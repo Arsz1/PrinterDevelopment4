@@ -12,6 +12,7 @@ class PrintOptions(var format: String, var copies: Int, var startpage: Int, var 
 
 data class OrderItem(
     val type: String,
+    val displayFileName: String,
     val fileName: String,
     val filePath: String,
     val format: String,

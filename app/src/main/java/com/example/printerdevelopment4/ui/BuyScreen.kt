@@ -39,6 +39,7 @@ import java.io.IOException
 val orderItems = listOf(
     OrderItem(
         type = "Печать JPG файла",
+        displayFileName = "bomberman-white.jpg",
         fileName = "bomberman-white.jpg",
         filePath = "/uploads/file-1745490603395-990607806.jpg",
         format = "A5",
@@ -80,7 +81,7 @@ fun ListOfOrders(
                         .width(305.dp)
                         .height(22.dp)
                         .padding(start = 20.dp, end = 20.dp, top = 5.dp),
-                        text = orderItem.fileName,
+                        text = orderItem.displayFileName,
                         textAlign = TextAlign.Left,
                         style = TextStyle(
                             fontSize = 14.sp,
@@ -108,7 +109,7 @@ fun ListOfOrders(
 
 fun ConfirmOrders(
     orderViewModel: OrderViewModel,
-    onConfirmTap: () -> Unit,
+    onSuccess: () -> Unit,
     token: String,
     ipViewState: IPUiState = IPUiState(),
     orders: List<OrderItem>
@@ -128,7 +129,7 @@ fun ConfirmOrders(
             .post(body)
             .build()
         try {
-            orderViewModel.sendRequest(client, request, onConfirmTap)
+            orderViewModel.sendRequest(client, request, onSuccess)
         }
         catch (e: IOException){
             val error = e
@@ -145,9 +146,13 @@ fun BuyScreen(
     orderViewModel: OrderViewModel = viewModel(),
     ipViewState: IPUiState = IPUiState(),
     onConfirmTap: () -> Unit,
-    token: String,
-    orders: List<OrderItem>
+    token: String
 ) {
+    val onSuccess: () -> Unit = {
+        orderViewModel.emptyOrders()
+        onConfirmTap()
+    }
+    val orders = orderViewModel.getOrders()
     val default = displayFontFamily
     Surface (modifier = modifier)
     {
@@ -182,7 +187,7 @@ fun BuyScreen(
                     ConfirmOrders(
                         orderViewModel = orderViewModel,
                         ipViewState = ipViewState,
-                        onConfirmTap = onConfirmTap,
+                        onSuccess = onSuccess,
                         token = token,
                         orders = orders
                     )
@@ -197,27 +202,7 @@ fun BuyScreen(
 @Composable
 fun BuyScreenPreview() {
     PrinterDevelopment4Theme {
-        BuyScreen(orders = mutableListOf(
-            OrderItem(
-                type = "Печать JPG файла",
-                fileName = "bomberman-white.jpg",
-                filePath = "/uploads/file-1745490603395-990607806.jpg",
-                format = "A5",
-                copies = 1,
-                startpage = 0,
-                endpage = 0,
-                price = 10
-            ),
-            OrderItem(type = "Печать JPG файла",
-                fileName = "bomberman-white.jpg",
-                filePath = "/uploads/file-1745490603395-990607806.jpg",
-                format = "A5",
-                copies = 1,
-                startpage = 0,
-                endpage = 0,
-                price = 10
-            )
-        ),
+        BuyScreen(
             token = "",
             onConfirmTap = {}
         )

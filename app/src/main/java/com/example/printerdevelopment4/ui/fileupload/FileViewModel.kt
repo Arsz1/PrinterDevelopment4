@@ -41,9 +41,9 @@ class FileViewModel(): ViewModel() {
                 val filename = jsonMap!!.getOrElse("filename") {}.toString()
                 val path = jsonMap!!.getOrElse("path") {}.toString()
                 val price = if ((enteredStartPage == "0") and (enteredEndPage == "0")){
-                    15
+                    15 /* TODO */
                 } else {
-                    (enteredEndPage.toInt() - enteredStartPage.toInt()) * 5
+                    (enteredEndPage.toInt() - enteredStartPage.toInt() + 1) * 5
                 }
                 onSuccess(filename, path, price, orderViewModel)
             }

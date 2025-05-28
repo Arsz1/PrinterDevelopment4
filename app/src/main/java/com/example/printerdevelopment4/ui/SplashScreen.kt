@@ -60,7 +60,7 @@ fun SplashScreen(
                 OutlinedTextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 20.dp, bottom = 20.dp)
+                        .padding(20.dp)
                         .border(
                             width = 2.dp,
                             color = Color(red = 99, green = 124, blue = 247),

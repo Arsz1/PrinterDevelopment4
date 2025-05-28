@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -94,11 +95,9 @@ val navigationItems = listOf(
 @Composable
 fun BottomNavigationBar(
     isLoggedIn: Boolean,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    selectedNavigationIndex: MutableIntState
 ) {
-    val selectedNavigationIndex = rememberSaveable {
-        mutableIntStateOf(0)
-    }
     if (isLoggedIn) {
         NavigationBar(
             containerColor = Color.White
@@ -111,7 +110,7 @@ fun BottomNavigationBar(
                         navController.navigate(item.route)
                     },
                     icon = {
-                        Icon(imageVector = item.icon, contentDescription = item.title)
+                        Icon(imageVector = item.icon, contentDescription = item.title, tint = Color.Black)
                     },
                     label = {
                         Text(
@@ -122,8 +121,8 @@ fun BottomNavigationBar(
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.surface,
-                        indicatorColor = MaterialTheme.colorScheme.primary
+                        selectedIconColor = Color(59, 84, 207),
+                        indicatorColor = Color(99, 124, 247)
                     )
                 )
             }
@@ -165,6 +164,9 @@ fun PrinterApp(
     appViewModel: AppViewModel = viewModel(),
     ipViewModel: IPViewModel = viewModel()
 ) {
+    val selectedNavigationIndex = rememberSaveable {
+        mutableIntStateOf(0)
+    }
     val appViewState = appViewModel.uiState.collectAsState()
     val orderViewState = orderViewModel.uiState.collectAsState()
     val ipViewState = ipViewModel.uiState.collectAsState()
@@ -187,7 +189,8 @@ fun PrinterApp(
         bottomBar = {
             BottomNavigationBar(
                 isLoggedIn = appViewState.value.IsLoggedIn,
-                navController
+                selectedNavigationIndex = selectedNavigationIndex,
+                navController = navController
             )
         }
     ) { innerPadding ->
@@ -226,6 +229,7 @@ fun PrinterApp(
                     appViewModel = appViewModel,
                     ipViewState = ipViewState.value,
                     onEnterTap = {
+                        appViewModel.updateLogIn()
                         navController.navigate(PrinterApp.Main.name)
                     }
                 )
@@ -242,7 +246,6 @@ fun PrinterApp(
                 appViewModel.updatePage(currentScreen.pageNum)
             }
             composable(route = PrinterApp.Main.name) {
-                appViewModel.updateLogIn()
                 MainScreen(
                     modifier = basic_mod,
                     onFileTap = {
@@ -256,11 +259,13 @@ fun PrinterApp(
                 appViewModel.updatePage(currentScreen.pageNum)
             }
             composable(route = PrinterApp.Payment.name) {
-                BuyScreen(modifier = basic_mod,
+                BuyScreen(
+                    orderViewModel = orderViewModel,
+                    modifier = basic_mod,
                     token = appViewState.value.Token,
-                    orders = orderViewState.value.orderItems,
                     ipViewState = ipViewState.value,
                     onConfirmTap = {
+                        selectedNavigationIndex.intValue = 0
                         navController.navigate(PrinterApp.Main.name)
                     }
                 )

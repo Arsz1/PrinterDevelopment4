@@ -25,7 +25,7 @@ class EnterViewModel : ViewModel() {
         _uiState.value = EnterUiState(email = EnteredEmail, password = EnteredPassword)
     }
 
-    fun sendRequest(moshi: Moshi, client: OkHttpClient, request: Request, appViewModel: AppViewModel, onSuccess: () -> Unit) {
+    fun sendRequest(moshi: Moshi, client: OkHttpClient, request: Request, appViewModel: AppViewModel, onSuccess: () -> Unit, onFail: (Exception) -> Unit) {
         var temp: Exception? = null
         viewModelScope.launch {
             try {
@@ -36,13 +36,13 @@ class EnterViewModel : ViewModel() {
                     appViewModel.updateToken(jsonResponse.token)
                 }
                 println(response)
-            } catch (e: IOException) {
+                onSuccess()
+            }
+            catch (e: Exception) {
                 println(e)
                 temp = e
+                onFail(e)
             }
-        }
-        if (temp == null) {
-            onSuccess()
         }
     }
 }

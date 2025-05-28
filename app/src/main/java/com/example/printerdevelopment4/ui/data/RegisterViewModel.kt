@@ -25,19 +25,16 @@ class RegisterViewModel : ViewModel() {
         _uiState.value = RegisterUiState(password = EnteredPassword, email = EnteredEmail)
     }
 
-    fun sendRequest(client: OkHttpClient, request: Request, onSuccess: () -> Unit) {
-        var temp: Exception? = null
+    fun sendRequest(client: OkHttpClient, request: Request, onSuccess: () -> Unit, onFail: (Exception) -> Unit) {
         viewModelScope.launch {
             try {
                 val response = makeRequest(client, request)
                 println(response)
-            } catch (e: IOException) {
+                onSuccess()
+            } catch (e: Exception) {
                 println(e)
-                temp = e
+                onFail(e)
             }
-        }
-        if (temp == null) {
-            onSuccess()
         }
     }
 }

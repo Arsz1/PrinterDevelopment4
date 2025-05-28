@@ -73,7 +73,10 @@ fun RegisterScreen(
     var passVis2 by remember { mutableStateOf(false) }
     val default = displayFontFamily
     val JSON = "application/json; charset=utf-8".toMediaType()
-    var error = ""
+    var error by remember { mutableStateOf("")}
+    val onFail: (Exception) -> Unit = { e ->
+        error = e.toString()
+    }
     Surface(modifier = modifier)
     {
         Column(
@@ -102,7 +105,7 @@ fun RegisterScreen(
                     text = stringResource(R.string.oneprint),
                     style =
                     TextStyle(
-                        fontFamily = FontFamily.SansSerif,
+                        fontFamily = default,
                         color = Color.Black,
                         fontSize = 70.sp
                     )
@@ -233,7 +236,7 @@ fun RegisterScreen(
                         val body: RequestBody = jsonRequest.toRequestBody(JSON)
                         val request = Request.Builder().url("http://" + ipViewState.IP + ":3000/register").post(body).build()
                         try {
-                            registerViewModel.sendRequest(client, request, onRegisterTap)
+                            registerViewModel.sendRequest(client, request, onRegisterTap, onFail)
                         }
                         catch (e: IOException){
                            error = "Ошибка регистрации"

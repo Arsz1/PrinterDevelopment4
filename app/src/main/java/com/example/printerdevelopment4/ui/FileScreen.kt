@@ -54,7 +54,6 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.IOException
 
-
 @Composable
 fun FileScreen(
     modifier: Modifier = Modifier,
@@ -408,8 +407,8 @@ fun FileScreen(
                         fileViewModel.sendRequest(client, request, orderViewModel
                         ) { internalFileName: String, internalFilePath: String, price: Int, orderViewModel2: OrderViewModel ->
                             orderViewModel2.addOrder(
-                                "Печать" + fileType.toString().uppercase() + "файла",
-                                internalFileName, internalFilePath, price, selectedFormat, fileViewModel.enteredCopies.toInt(), fileViewModel.enteredStartPage.toInt(), fileViewModel.enteredEndPage.toInt()
+                                "Печать " + fileType.toString().uppercase() + " файла",
+                                fileName.toString(), internalFileName, internalFilePath, price, selectedFormat, fileViewModel.enteredCopies.toInt(), fileViewModel.enteredStartPage.toInt(), fileViewModel.enteredEndPage.toInt()
                             )
                             onConfirmTap()
                         }

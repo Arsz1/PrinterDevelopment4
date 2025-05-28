@@ -64,6 +64,7 @@ fun MainScreen(
                 ) {
                     Text(text = "Выбранное устройство",
                         style = TextStyle(
+                            color = Color(0, 0, 0),
                             fontSize = 16.sp,
                             fontWeight = FontWeight(700)
                         )
@@ -83,6 +84,7 @@ fun MainScreen(
                     Icon(
                         Icons.Filled.Notifications,
                         contentDescription = "Toggle notifications menu",
+                        tint = Color.Black,
                         modifier = Modifier
                             .requiredSize(34.dp)
                             .clickable { }

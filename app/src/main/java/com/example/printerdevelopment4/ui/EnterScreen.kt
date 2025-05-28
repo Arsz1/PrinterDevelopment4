@@ -75,8 +75,11 @@ fun EnterScreen(
     val state = remember { TextFieldState() }
     val default = displayFontFamily
     val JSON = "application/json; charset=utf-8".toMediaType()
-    var error = ""
+    var error by remember { mutableStateOf("")}
     var passVis by remember { mutableStateOf(false) }
+    val onFail: (Exception) -> Unit = { e ->
+        error = e.toString()
+    }
     Surface(modifier = modifier)
     {
         Column(
@@ -107,7 +110,7 @@ fun EnterScreen(
                     text = stringResource(R.string.oneprint),
                     style =
                     TextStyle(
-                        fontFamily = FontFamily.SansSerif,
+                        fontFamily = default,
                         fontSize = 70.sp,
                         color = Color.Black
                     ),
@@ -198,7 +201,7 @@ fun EnterScreen(
                         val body: RequestBody = jsonRequest.toRequestBody(JSON)
                         val request = Request.Builder().url("http://" + ipViewState.IP + ":3000/login").post(body).build()
                         try {
-                            enterViewModel.sendRequest(moshi, client, request, appViewModel, onEnterTap)
+                            enterViewModel.sendRequest(moshi, client, request, appViewModel, onEnterTap, onFail)
                         }
                         catch (e: IOException){
                             error = "Ошибка регистрации"
