@@ -41,7 +41,7 @@ fun AuthorizeScreen(
     Surface (modifier = modifier)
     {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().background(color = Color.White),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(180.dp))
@@ -52,11 +52,12 @@ fun AuthorizeScreen(
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
                 Text(
-                    text = stringResource(R.string.print_smart),
+                    text = stringResource(R.string.oneprint),
                     style =
                     TextStyle(
                         fontFamily = default,
-                        fontSize = 70.sp
+                        fontSize = 70.sp,
+                        color = Color.Black
                     ),
                     modifier = Modifier
                         .padding(bottom = 15.dp)

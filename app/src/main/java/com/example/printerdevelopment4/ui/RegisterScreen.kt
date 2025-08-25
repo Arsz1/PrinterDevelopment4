@@ -2,6 +2,8 @@ package com.example.printerdevelopment4.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,18 +12,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,33 +40,53 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.printerdevelopment4.R
+import com.example.printerdevelopment4.ui.data.IPUiState
 import com.example.printerdevelopment4.ui.data.RegisterViewModel
+import com.example.printerdevelopment4.ui.data.User
 import com.example.printerdevelopment4.ui.theme.PrinterDevelopment4Theme
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
 
 @Composable
 fun RegisterScreen(
     modifier: Modifier = Modifier,
-    registerViewModel: RegisterViewModel = viewModel()
+    registerViewModel: RegisterViewModel = viewModel(),
+    ipViewState: IPUiState = IPUiState(),
+    onRegisterTap: () -> Unit
 ) {
-    val enterUiState by registerViewModel.uiState.collectAsState()
+    val registerUiState by registerViewModel.uiState.collectAsState()
+    var passVis by remember { mutableStateOf(false) }
+    var passVis2 by remember { mutableStateOf(false) }
     val default = displayFontFamily
-    val username = ""
+    val JSON = "application/json; charset=utf-8".toMediaType()
+    var error by remember { mutableStateOf("")}
+    val onFail: (Exception) -> Unit = { e ->
+        error = e.toString()
+    }
     Surface(modifier = modifier)
     {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().background(color = Color.White),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(30.dp))
             Column(
                 modifier = Modifier
-                    .weight(1f),
+                    .weight(0.5f),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
@@ -72,14 +102,13 @@ fun RegisterScreen(
                         .height(100.dp)
                 )
                 Text(
-                    text = stringResource(R.string.print_smart),
+                    text = stringResource(R.string.oneprint),
                     style =
                     TextStyle(
-                        fontFamily = FontFamily.SansSerif,
+                        fontFamily = default,
+                        color = Color.Black,
                         fontSize = 70.sp
-                    ),
-                    modifier = Modifier
-                        .padding(bottom = 15.dp)
+                    )
                 )
             }
             Column(
@@ -93,29 +122,64 @@ fun RegisterScreen(
                     .fillMaxWidth(),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    Text(text = "Имя пользователя", textAlign = TextAlign.Left)
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 10.dp)
-                            .height(50.dp),
-                        value = registerViewModel.EnteredUsername,
-                        onValueChange = { registerViewModel.EnteredUsername = it },
-                        singleLine = true
-                    )
-                }
-                Column(modifier = Modifier
-                    .fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(text = "Адрес электронной почты", textAlign = TextAlign.Left)
+                    Text(text = "Адрес электронной почты", textAlign = TextAlign.Left, color = Color.Black)
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 20.dp)
-                            .height(50.dp),
+                            .border(
+                                width = 2.dp,
+                                color = Color(red = 99, green = 124, blue = 247),
+                                shape = RoundedCornerShape(15.dp)
+                            )
+                            .background(shape = RoundedCornerShape(15.dp), color = Color.White)
+                            .height(60.dp),
+                        shape = RoundedCornerShape(15.dp),
+                        textStyle = TextStyle(color = Color.Black),
+                        value = registerViewModel.EnteredEmail,
+                        onValueChange = { registerViewModel.EnteredEmail = it },
+                        singleLine = true
+                    )
+                }
+                Column(modifier = Modifier
+                    .fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(text = "Пароль", textAlign = TextAlign.Left, color = Color.Black)
+                    OutlinedTextField(
                         value = registerViewModel.EnteredPassword,
-                        onValueChange = { registerViewModel.EnteredPassword = it },
+                        visualTransformation = if (!passVis) {
+                            PasswordVisualTransformation()
+                        } else {
+                            VisualTransformation.None
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp)
+                            .border(
+                                width = 2.dp,
+                                color = Color(red = 99, green = 124, blue = 247),
+                                shape = RoundedCornerShape(15.dp)
+                            )
+                            .background(shape = RoundedCornerShape(15.dp), color = Color.White)
+                            .height(60.dp),
+                        trailingIcon = {
+                            Icon(
+                                if (!passVis) {
+                                    Icons.Filled.Visibility
+                                } else {
+                                    Icons.Filled.VisibilityOff
+                                },
+                                contentDescription = "Toggle password visibility",
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .requiredSize(28.dp)
+                                    .clickable { passVis = !passVis }
+                            )
+                        },
+                        onValueChange = { registerViewModel.EnteredPassword = it},
+                        shape = RoundedCornerShape(15.dp),
+                        textStyle = TextStyle(color = Color.Black),
                         singleLine = true
                     )
                 }
@@ -123,34 +187,64 @@ fun RegisterScreen(
                     .fillMaxWidth(),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    Text(text = "Пароль", textAlign = TextAlign.Left)
+                    Text(text = "Повторите пароль", textAlign = TextAlign.Left, color = Color.Black)
                     OutlinedTextField(
+                        value = registerViewModel.EnteredSecPass,
+                        visualTransformation = if (!passVis2) {
+                            PasswordVisualTransformation()
+                        } else {
+                            VisualTransformation.None
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 10.dp)
-                            .height(50.dp),
-                        value = registerViewModel.EnteredUsername,
-                        onValueChange = { registerViewModel.EnteredUsername = it },
-                        singleLine = true
-                    )
-                }
-                Column(modifier = Modifier
-                    .fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(text = "Повторите пароль", textAlign = TextAlign.Left)
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 10.dp)
-                            .height(50.dp),
-                        value = registerViewModel.EnteredUsername,
-                        onValueChange = { registerViewModel.EnteredUsername = it },
+                            .padding(bottom = 20.dp)
+                            .border(
+                                width = 2.dp,
+                                color = Color(red = 99, green = 124, blue = 247),
+                                shape = RoundedCornerShape(15.dp)
+                            )
+                            .background(shape = RoundedCornerShape(15.dp), color = Color.White)
+                            .height(60.dp),
+                        trailingIcon = {
+                            Icon(
+                                if (!passVis2) {
+                                    Icons.Filled.Visibility
+                                } else {
+                                    Icons.Filled.VisibilityOff
+                                },
+                                contentDescription = "Toggle password visibility",
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .requiredSize(28.dp)
+                                    .clickable { passVis2 = !passVis2 }
+                            )
+                        },
+                        onValueChange = { registerViewModel.EnteredSecPass = it},
+                        shape = RoundedCornerShape(15.dp),
+                        textStyle = TextStyle(color = Color.Black),
                         singleLine = true
                     )
                 }
                 Button(
-                    onClick = { registerViewModel.updateState() },
+                    onClick = {
+                        val client = OkHttpClient()
+                        val user = User(registerViewModel.EnteredEmail, registerViewModel.EnteredPassword)
+                        val moshi = Moshi.Builder()
+                            .add(KotlinJsonAdapterFactory()).build()
+                        val jsonAdapterRequest = moshi.adapter(User::class.java)
+                        val jsonRequest = jsonAdapterRequest.toJson(user)
+                        val body: RequestBody = jsonRequest.toRequestBody(JSON)
+                        val request = Request.Builder().url("http://" + ipViewState.IP + ":3000/register").post(body).build()
+                        try {
+                            registerViewModel.sendRequest(client, request, onRegisterTap, onFail)
+                        }
+                        catch (e: IOException){
+                           error = "Ошибка регистрации"
+                        }
+                        catch (e: Exception) {
+                            val error = e
+                        }
+                              },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 30.dp),
@@ -171,6 +265,20 @@ fun RegisterScreen(
                         )
                     )
                 }
+                if (error != "") {
+                    Row(
+                        modifier = Modifier
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = error,
+                            style = TextStyle(
+                                fontSize = 14.sp,
+                                color = Color(200, 0, 0)
+                            )
+                        )
+                    }
+                }
             }
         }
     }
@@ -180,6 +288,6 @@ fun RegisterScreen(
 @Composable
 fun RegisterScreenPreview() {
     PrinterDevelopment4Theme {
-        RegisterScreen()
+        RegisterScreen(onRegisterTap = {})
     }
 }
